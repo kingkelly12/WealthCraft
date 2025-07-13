@@ -28,7 +28,7 @@ import { TradingHub } from './TradingHub';
 
 // Mock data for the dashboard
 const playerData = {
-  name: "Alex Rodriguez",
+  name: "Kelly Koome",
   netWorth: 125750,
   netWorthChange: 8420,
   changePercentage: 7.2,
