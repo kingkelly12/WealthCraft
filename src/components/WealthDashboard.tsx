@@ -25,6 +25,8 @@ import { AssetMarketplace } from './AssetMarketplace';
 import { LifeEventsPanel } from './LifeEventsPanel';
 import { NewsPanel } from './NewsPanel';
 import { TradingHub } from './TradingHub';
+import VirtualAcademy from './VirtualAcademy';
+import BankingSystem from './BankingSystem';
 
 // Mock data for the dashboard
 const playerData = {
@@ -283,6 +285,15 @@ export function WealthDashboard() {
           
           {/* Trading Hub */}
           <TradingHub />
+        </div>
+
+        {/* Phase 2 Features */}
+        <div className="grid grid-cols-1 xl:grid-cols-2 gap-6 mt-6">
+          {/* Virtual Academy */}
+          <VirtualAcademy />
+          
+          {/* Banking System */}
+          <BankingSystem />
         </div>
       </div>
     </div>
