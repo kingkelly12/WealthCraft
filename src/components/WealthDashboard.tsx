@@ -27,6 +27,9 @@ import { NewsPanel } from './NewsPanel';
 import { TradingHub } from './TradingHub';
 import VirtualAcademy from './VirtualAcademy';
 import BankingSystem from './BankingSystem';
+import { Leaderboards } from './Leaderboards';
+import { LifeGoals } from './LifeGoals';
+import { HallOfFame } from './HallOfFame';
 
 // Mock data for the dashboard
 const playerData = {
@@ -294,6 +297,18 @@ export function WealthDashboard() {
           
           {/* Banking System */}
           <BankingSystem />
+        </div>
+
+        {/* Phase 3 Features - Competitive & Social */}
+        <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mt-6">
+          {/* Leaderboards */}
+          <Leaderboards />
+          
+          {/* Life Goals */}
+          <LifeGoals />
+          
+          {/* Hall of Fame */}
+          <HallOfFame />
         </div>
       </div>
     </div>
