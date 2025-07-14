@@ -19,6 +19,8 @@ import {
   Check
 } from 'lucide-react';
 
+import { buttonVariants } from '@/components/ui/button';
+
 interface LifeEvent {
   id: string;
   title: string;
@@ -273,6 +275,176 @@ const lifeEvents: LifeEvent[] = [
     ],
     timeLimit: 150,
     icon: Heart
+  },
+  {
+    id: 'startup_investment',
+    title: 'Startup Investment Opportunity',
+    description: 'A promising tech startup is seeking investors. High risk, high reward.',
+    type: 'opportunity',
+    impact: {
+      cash: -10000
+    },
+    choices: [
+      {
+        id: 'invest_full',
+        label: 'Invest $10,000',
+        outcome: 'Potential for high returns, but risk losing investment',
+        cost: 10000,
+        benefit: 0
+      },
+      {
+        id: 'invest_partial',
+        label: 'Invest $5,000',
+        outcome: 'Lower risk, lower potential returns',
+        cost: 5000,
+        benefit: 0
+      },
+      {
+        id: 'pass',
+        label: 'Pass on Investment',
+        outcome: 'Keep cash for safer opportunities',
+        cost: 0,
+        benefit: 0
+      }
+    ],
+    timeLimit: 180,
+    icon: Building
+  },
+  {
+    id: 'unexpected_bonus',
+    title: 'Unexpected Work Bonus',
+    description: 'Your company rewarded you with a surprise bonus this quarter.',
+    type: 'opportunity',
+    impact: {
+      cash: 5000
+    },
+    choices: [
+      {
+        id: 'save_bonus',
+        label: 'Save Bonus',
+        outcome: 'Add to savings account',
+        cost: 0,
+        benefit: 5000
+      },
+      {
+        id: 'spend_bonus',
+        label: 'Spend Bonus',
+        outcome: 'Enjoy a nice treat or purchase',
+        cost: 0,
+        benefit: 0
+      },
+      {
+        id: 'invest_bonus',
+        label: 'Invest Bonus',
+        outcome: 'Put bonus into stocks or funds',
+        cost: 0,
+        benefit: 5000
+      }
+    ],
+    timeLimit: 120,
+    icon: DollarSign
+  },
+  {
+    id: 'family_reunion_expense',
+    title: 'Family Reunion Expense',
+    description: 'You decided to host a family reunion, incurring unexpected costs.',
+    type: 'challenge',
+    impact: {
+      expenses: 3000
+    },
+    choices: [
+      {
+        id: 'cut_costs',
+        label: 'Cut Costs',
+        outcome: 'Reduce expenses by simplifying event',
+        cost: 0,
+        benefit: 0
+      },
+      {
+        id: 'go_all_out',
+        label: 'Go All Out',
+        outcome: 'Host a lavish event, impress family',
+        cost: 3000,
+        benefit: 0
+      },
+      {
+        id: 'postpone',
+        label: 'Postpone Event',
+        outcome: 'Delay reunion to save money',
+        cost: 0,
+        benefit: 0
+      }
+    ],
+    timeLimit: 90,
+    icon: Heart
+  },
+  {
+    id: 'car_insurance_increase',
+    title: 'Car Insurance Premium Increase',
+    description: 'Your car insurance premium has increased unexpectedly.',
+    type: 'challenge',
+    impact: {
+      expenses: 1200
+    },
+    choices: [
+      {
+        id: 'shop_around',
+        label: 'Shop Around',
+        outcome: 'Look for better insurance deals',
+        cost: 0,
+        benefit: 0
+      },
+      {
+        id: 'accept_increase',
+        label: 'Accept Increase',
+        outcome: 'Pay higher premium to maintain coverage',
+        cost: 1200,
+        benefit: 0
+      },
+      {
+        id: 'reduce_coverage',
+        label: 'Reduce Coverage',
+        outcome: 'Lower premium but less protection',
+        cost: 0,
+        benefit: 0
+      }
+    ],
+    timeLimit: 60,
+    icon: Car
+  },
+  {
+    id: 'charity_donation',
+    title: 'Charity Donation Opportunity',
+    description: 'A local charity is seeking donations to support community programs.',
+    type: 'opportunity',
+    impact: {
+      cash: -500
+    },
+    choices: [
+      {
+        id: 'donate_full',
+        label: 'Donate $500',
+        outcome: 'Support community and get tax benefits',
+        cost: 500,
+        benefit: 0
+      },
+      {
+        id: 'donate_partial',
+        label: 'Donate $250',
+        outcome: 'Partial support, smaller tax benefits',
+        cost: 250,
+        benefit: 0
+      },
+      {
+        id: 'decline',
+        label: 'Decline Donation',
+        outcome: 'Keep cash for other uses',
+        cost: 0,
+        benefit: 0
+      }
+    ],
+    timeLimit: 120,
+    icon: Gift
   }
 ];
 
@@ -368,9 +540,9 @@ export function LifeEventsPanel() {
                   <div>
                     <div className="flex items-center gap-2 mb-1">
                       <h3 className="font-semibold">{currentEvent.title}</h3>
-                      <Badge variant={currentEvent.type === 'opportunity' ? 'default' : 'destructive'}>
-                        {currentEvent.type}
-                      </Badge>
+                  <Badge className={currentEvent.type === 'opportunity' ? buttonVariants({ variant: 'default' }) : buttonVariants({ variant: 'destructive' })}>
+                    {currentEvent.type}
+                  </Badge>
                     </div>
                     <AlertDescription>{currentEvent.description}</AlertDescription>
                   </div>
@@ -402,31 +574,29 @@ export function LifeEventsPanel() {
                   {/* Choices */}
                   <div className="grid gap-2">
                     {currentEvent.choices.map((choice) => (
-                      <Button
-                        key={choice.id}
-                        variant="outline"
-                        size="sm"
-                        className="justify-start text-left h-auto p-3"
-                        onClick={() => handleEventChoice(choice.id)}
-                      >
-                        <div>
-                          <div className="font-medium">{choice.label}</div>
-                          <div className="text-xs text-muted-foreground mt-1">{choice.outcome}</div>
-                          {choice.cost && (
-                            <div className="text-xs text-danger">Cost: ${choice.cost.toLocaleString()}</div>
-                          )}
-                          {choice.benefit && (
-                            <div className="text-xs text-success">Benefit: ${choice.benefit.toLocaleString()}</div>
-                          )}
-                        </div>
-                      </Button>
+                    <button
+                      key={choice.id}
+                      className={`${buttonVariants({ variant: 'outline', size: 'sm' })} justify-start text-left h-auto p-3`}
+                      onClick={() => handleEventChoice(choice.id)}
+                    >
+                      <div>
+                        <div className="font-medium">{choice.label}</div>
+                        <div className="text-xs text-muted-foreground mt-1">{choice.outcome}</div>
+                        {choice.cost && (
+                          <div className="text-xs text-danger">Cost: ${choice.cost.toLocaleString()}</div>
+                        )}
+                        {choice.benefit && (
+                          <div className="text-xs text-success">Benefit: ${choice.benefit.toLocaleString()}</div>
+                        )}
+                      </div>
+                    </button>
                     ))}
                   </div>
                 </div>
               </div>
-              <Button variant="ghost" size="sm" onClick={dismissEvent}>
+              <button className={buttonVariants({ variant: 'ghost', size: 'sm' })} onClick={dismissEvent}>
                 <X className="h-4 w-4" />
-              </Button>
+              </button>
             </div>
           </Alert>
         )}
