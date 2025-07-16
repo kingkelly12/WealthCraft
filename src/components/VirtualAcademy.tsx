@@ -91,6 +91,8 @@ export default function VirtualAcademy() {
     : courses.filter(course => course.category === selectedCategory);
 
   const handleEnroll = (courseId: string) => {
+    // TODO: Implement course enrollment with database
+    console.log('Enrolling in course:', courseId);
     setEnrolledCourses(prev => [...prev, courseId]);
   };
 

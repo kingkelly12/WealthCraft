@@ -621,13 +621,15 @@ export function AssetMarketplace() {
     : marketAssets.filter(asset => asset.category === selectedCategory);
 
   const handleBuyAsset = (asset: Asset) => {
-    // TODO: Implement purchase logic
+    // TODO: Implement purchase logic with database
     console.log('Buying asset:', asset);
+    // Add to user_assets table, deduct from user balance
   };
 
   const handleBidAsset = (asset: Asset) => {
-    // TODO: Implement bidding logic
+    // TODO: Implement bidding logic with database
     console.log('Bidding on asset:', asset);
+    // Create bid record, handle auction logic
   };
 
   return (

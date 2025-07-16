@@ -293,7 +293,7 @@ export default function BankingSystem() {
                     </CardContent>
                   </Card>
 
-                  <Button className="w-full" variant="premium">
+                  <Button className="w-full" variant="premium" onClick={() => console.log('Applying for loan with amount:', loanAmount[0])}>
                     Apply for Loan
                   </Button>
                 </div>
@@ -354,6 +354,7 @@ export default function BankingSystem() {
                         className="w-full" 
                         disabled={!qualified}
                         variant={qualified ? "default" : "outline"}
+                        onClick={() => qualified && console.log('Applying for bank loan:', loan.id)}
                       >
                         {qualified ? 'Apply Now' : 'Improve Credit Score'}
                       </Button>
@@ -405,10 +406,10 @@ export default function BankingSystem() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1">
+                      <Button variant="outline" className="flex-1" onClick={() => console.log('Negotiating terms for loan:', loan.id)}>
                         Negotiate Terms
                       </Button>
-                      <Button variant="default" className="flex-1">
+                      <Button variant="default" className="flex-1" onClick={() => console.log('Applying for P2P loan:', loan.id)}>
                         Apply Now
                       </Button>
                     </div>
@@ -423,7 +424,7 @@ export default function BankingSystem() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Earn 8-15% returns by lending to other players
                   </p>
-                  <Button variant="premium">
+                  <Button variant="premium" onClick={() => console.log('Starting lending process')}>
                     Start Lending
                   </Button>
                 </CardContent>

@@ -72,7 +72,7 @@ const lifeGoals = [
 ];
 
 const familyMembers = [
-  { name: "Kelly", role: "You", avatar: "/avatars/kelly.jpg", age: 28, profession: "Software Developer" },
+  { name: "Alex", role: "You", avatar: "/avatars/alex.jpg", age: 28, profession: "Software Developer" },
   { name: "Jordan", role: "Partner", avatar: "/avatars/jordan.jpg", age: 26, profession: "Marketing Manager" },
   { name: "Max", role: "Pet", avatar: "/avatars/dog.jpg", age: 3, profession: "Good Boy" }
 ];
@@ -174,7 +174,7 @@ export function LifeGoals() {
               </CardTitle>
               <CardDescription>Your dreams and aspirations</CardDescription>
             </div>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" onClick={() => console.log('Adding new life goal')}>
               <Plus className="h-4 w-4 mr-2" />
               Add Goal
             </Button>
@@ -239,7 +239,7 @@ export function LifeGoals() {
                         </div>
                       ))}
                     </div>
-                    <Button size="sm" className="mt-3 w-full">
+                    <Button size="sm" className="mt-3 w-full" onClick={() => console.log('Contributing to goal:', goal.id)}>
                       <DollarSign className="h-4 w-4 mr-2" />
                       Contribute Now
                     </Button>
@@ -292,7 +292,7 @@ export function LifeGoals() {
             </div>
           </div>
 
-          <Button variant="outline" className="w-full">
+          <Button variant="outline" className="w-full" onClick={() => console.log('Adjusting retirement plan')}>
             <Briefcase className="h-4 w-4 mr-2" />
             Adjust Retirement Plan
           </Button>

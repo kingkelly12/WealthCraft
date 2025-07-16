@@ -55,8 +55,30 @@ const quickActions = [
 
 export function QuickActions() {
   const handleAction = (actionId: string) => {
-    // TODO: Implement action handlers
-    console.log(`Action triggered: ${actionId}`);
+    switch (actionId) {
+      case 'job':
+        // TODO: Navigate to job application or create job record
+        console.log('Getting job...');
+        break;
+      case 'course':
+        // TODO: Navigate to course selection or enroll in course
+        console.log('Taking course...');
+        break;
+      case 'invest':
+        // TODO: Navigate to investment options or make investment
+        console.log('Making investment...');
+        break;
+      case 'loan':
+        // TODO: Navigate to loan application or create loan request
+        console.log('Applying for loan...');
+        break;
+      case 'trade':
+        // TODO: Navigate to trading hub
+        console.log('Trading...');
+        break;
+      default:
+        console.log(`Action triggered: ${actionId}`);
+    }
   };
 
   return (

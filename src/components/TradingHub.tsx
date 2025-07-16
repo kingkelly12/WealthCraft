@@ -156,14 +156,20 @@ export function TradingHub() {
     const amount = bidAmount[offerId];
     if (!amount) return;
     
-    // TODO: Implement bidding logic
+    // TODO: Implement bidding logic with database
     console.log('Placing bid:', offerId, amount);
+    // Add bid to database, update user assets
     setBidAmount(prev => ({ ...prev, [offerId]: '' }));
   };
 
   const handleNegotiate = (offerId: string) => {
-    // TODO: Implement negotiation chat
+    // TODO: Implement negotiation chat system
     console.log('Starting negotiation:', offerId);
+  };
+
+  const handleBuyNow = (offerId: string) => {
+    // TODO: Implement direct purchase with database
+    console.log('Buying now:', offerId);
   };
 
   const getStatusColor = (status: ActiveBid['status']) => {
@@ -247,7 +253,7 @@ export function TradingHub() {
                             <MessageSquare className="h-3 w-3 mr-1" />
                             Chat
                           </Button>
-                          <Button size="sm">
+                          <Button size="sm" onClick={() => handleBuyNow(offer.id)}>
                             Buy Now
                           </Button>
                         </div>
@@ -325,7 +331,7 @@ export function TradingHub() {
                               Bid
                             </Button>
                           </div>
-                          <Button size="sm" variant="outline" className="w-full">
+                          <Button size="sm" variant="outline" className="w-full" onClick={() => handleNegotiate(offer.id)}>
                             <MessageSquare className="h-3 w-3 mr-1" />
                             Ask Seller
                           </Button>
@@ -367,7 +373,7 @@ export function TradingHub() {
                         {bid.status.charAt(0).toUpperCase() + bid.status.slice(1)}
                       </Badge>
                       {bid.status === 'outbid' && (
-                        <Button size="sm" variant="outline">
+                        <Button size="sm" variant="outline" onClick={() => console.log('Increasing bid for', bid.id)}>
                           Increase Bid
                         </Button>
                       )}
