@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { useToast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
 import { 
   Briefcase, 
   GraduationCap, 
@@ -56,9 +57,14 @@ const quickActions = [
   }
 ];
 
-export function QuickActions() {
+interface QuickActionsProps {
+  onNavigateToBankLoans?: () => void;
+}
+
+export function QuickActions({ onNavigateToBankLoans }: QuickActionsProps) {
   const { user } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleAction = async (actionId: string) => {
     if (!user) {
@@ -82,7 +88,11 @@ export function QuickActions() {
           await handleInvest();
           break;
         case 'loan':
-          await handleLoan();
+          if (onNavigateToBankLoans) {
+            onNavigateToBankLoans();
+          } else {
+            await handleLoan();
+          }
           break;
         case 'trade':
           toast({
@@ -124,76 +134,24 @@ export function QuickActions() {
   };
 
   const handleTakeCourse = async () => {
-    // Get a random course
-    const { data: courses, error: coursesError } = await supabase
-      .from('courses')
-      .select('*')
-      .limit(1);
-
-    if (coursesError || !courses?.length) {
-      toast({
-        title: "No Courses Available",
-        description: "Please try again later",
-        variant: "destructive"
-      });
-      return;
-    }
-
-    const course = courses[0];
-    
-    const { data, error } = await supabase
-      .from('user_courses')
-      .insert({
-        user_id: user.id,
-        course_id: course.id,
-        progress: 0
-      });
-
-    if (error) throw error;
-    
-    toast({
-      title: "Course Enrolled!",
-      description: `You've enrolled in ${course.title} for $${course.cost}`
-    });
+    navigate('/virtual-academy');
   };
 
   const handleInvest = async () => {
-    const { data, error } = await supabase
-      .from('user_assets')
-      .insert({
-        user_id: user.id,
-        name: 'Tech Stock Portfolio',
-        asset_type: 'stocks',
-        value: 10000,
-        quantity: 100
+    try {
+      navigate('/asset-marketplace');
+    } catch (error) {
+      toast({
+        title: "Navigation Failed",
+        description: "Unable to navigate to Asset Marketplace. Please try again.",
+        variant: "destructive"
       });
-
-    if (error) throw error;
-    
-    toast({
-      title: "Investment Made!",
-      description: "You've invested $10,000 in a tech stock portfolio"
-    });
+      console.error(error);
+    }
   };
 
   const handleLoan = async () => {
-    const { data, error } = await supabase
-      .from('loans')
-      .insert({
-        lender_id: user.id,
-        amount: 25000,
-        interest_rate: 8.5,
-        term_months: 36,
-        purpose: 'Business expansion',
-        status: 'pending'
-      });
-
-    if (error) throw error;
-    
-    toast({
-      title: "Loan Application Submitted!",
-      description: "Your application for $25,000 at 8.5% APR has been submitted"
-    });
+    navigate('/banking-system', { state: { tab: 'bank' } });
   };
 
   return (

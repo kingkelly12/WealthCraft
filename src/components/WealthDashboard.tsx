@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
@@ -24,7 +24,6 @@ import P2PLendingForm from './P2PLendingForm';
 import { NetWorthChart } from './NetWorthChart';
 import { QuickActions } from './QuickActions';
 import { NotificationsPanel } from './NotificationsPanel';
-import { AssetMarketplace } from './AssetMarketplace';
 import { LifeEventsPanel } from './LifeEventsPanel';
 import { NewsPanel } from './NewsPanel';
 import { TradingHub } from './TradingHub';
@@ -47,7 +46,9 @@ export function WealthDashboard() {
     calculatedIncome,
     loading 
   } = useUserProfile();
-  
+
+  const [bankingTab, setBankingTab] = useState('apply');
+
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
@@ -274,7 +275,7 @@ export function WealthDashboard() {
                     </div>
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">Next Promotion</span>
+                        <span>Next Promotion</span>
                         <span className="font-medium">{currentJob.promotion_progress}%</span>
                       </div>
                       <Progress value={currentJob.promotion_progress} className="h-2" />
@@ -298,7 +299,7 @@ export function WealthDashboard() {
             </Card>
 
             {/* Quick Actions */}
-            <QuickActions />
+            <QuickActions onNavigateToBankLoans={() => setBankingTab('bank')} />
 
             {/* Notifications */}
             <NotificationsPanel />
@@ -326,7 +327,7 @@ export function WealthDashboard() {
           <VirtualAcademy />
           
           {/* Banking System */}
-          <BankingSystem />
+          <BankingSystem currentTab={bankingTab} onTabChange={setBankingTab} />
         </div>
 
         {/* Phase 3 Features - Competitive & Social */}

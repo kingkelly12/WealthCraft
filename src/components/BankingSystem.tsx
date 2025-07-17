@@ -116,14 +116,23 @@ const p2pLoans = [
   }
 ];
 
+import { useState, useEffect } from "react";
+import { useLocation } from "react-router-dom";
 export default function BankingSystem() {
   const { user } = useAuth();
   const { toast } = useToast();
+  const location = useLocation();
   const [currentTab, setCurrentTab] = useState('apply');
   const [loanAmount, setLoanAmount] = useState([25000]);
   const [loanTerm, setLoanTerm] = useState([36]);
   const [selectedLoanType, setSelectedLoanType] = useState('personal');
   const [creditScore] = useState(685); // Mock credit score
+
+  useEffect(() => {
+    if (location.state && location.state.tab) {
+      setCurrentTab(location.state.tab);
+    }
+  }, [location.state]);
 
   const calculateMonthlyPayment = (principal: number, rate: number, term: number) => {
     const monthlyRate = rate / 100 / 12;
