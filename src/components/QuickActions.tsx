@@ -1,6 +1,9 @@
 import React from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Briefcase, 
   GraduationCap, 
@@ -54,31 +57,143 @@ const quickActions = [
 ];
 
 export function QuickActions() {
-  const handleAction = (actionId: string) => {
-    switch (actionId) {
-      case 'job':
-        // TODO: Navigate to job application or create job record
-        console.log('Getting job...');
-        break;
-      case 'course':
-        // TODO: Navigate to course selection or enroll in course
-        console.log('Taking course...');
-        break;
-      case 'invest':
-        // TODO: Navigate to investment options or make investment
-        console.log('Making investment...');
-        break;
-      case 'loan':
-        // TODO: Navigate to loan application or create loan request
-        console.log('Applying for loan...');
-        break;
-      case 'trade':
-        // TODO: Navigate to trading hub
-        console.log('Trading...');
-        break;
-      default:
-        console.log(`Action triggered: ${actionId}`);
+  const { user } = useAuth();
+  const { toast } = useToast();
+
+  const handleAction = async (actionId: string) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to continue",
+        variant: "destructive"
+      });
+      return;
     }
+
+    try {
+      switch (actionId) {
+        case 'job':
+          await handleGetJob();
+          break;
+        case 'course':
+          await handleTakeCourse();
+          break;
+        case 'invest':
+          await handleInvest();
+          break;
+        case 'loan':
+          await handleLoan();
+          break;
+        case 'trade':
+          toast({
+            title: "Trading Hub",
+            description: "Navigate to Trading Hub section to start trading"
+          });
+          break;
+        default:
+          console.log(`Action triggered: ${actionId}`);
+      }
+    } catch (error) {
+      console.error('Action failed:', error);
+      toast({
+        title: "Action Failed",
+        description: "Something went wrong. Please try again.",
+        variant: "destructive"
+      });
+    }
+  };
+
+  const handleGetJob = async () => {
+    const { data, error } = await supabase
+      .from('jobs')
+      .insert({
+        user_id: user.id,
+        title: 'New Position',
+        company: 'Tech Corp',
+        salary: 75000,
+        level: 'mid',
+        experience_months: 24
+      });
+
+    if (error) throw error;
+    
+    toast({
+      title: "Job Applied!",
+      description: "You've successfully applied for a new position with $75,000 salary"
+    });
+  };
+
+  const handleTakeCourse = async () => {
+    // Get a random course
+    const { data: courses, error: coursesError } = await supabase
+      .from('courses')
+      .select('*')
+      .limit(1);
+
+    if (coursesError || !courses?.length) {
+      toast({
+        title: "No Courses Available",
+        description: "Please try again later",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    const course = courses[0];
+    
+    const { data, error } = await supabase
+      .from('user_courses')
+      .insert({
+        user_id: user.id,
+        course_id: course.id,
+        progress: 0
+      });
+
+    if (error) throw error;
+    
+    toast({
+      title: "Course Enrolled!",
+      description: `You've enrolled in ${course.title} for $${course.cost}`
+    });
+  };
+
+  const handleInvest = async () => {
+    const { data, error } = await supabase
+      .from('user_assets')
+      .insert({
+        user_id: user.id,
+        name: 'Tech Stock Portfolio',
+        asset_type: 'stocks',
+        value: 10000,
+        quantity: 100
+      });
+
+    if (error) throw error;
+    
+    toast({
+      title: "Investment Made!",
+      description: "You've invested $10,000 in a tech stock portfolio"
+    });
+  };
+
+  const handleLoan = async () => {
+    const { data, error } = await supabase
+      .from('loans')
+      .insert({
+        lender_id: user.id,
+        amount: 25000,
+        interest_rate: 8.5,
+        term_months: 36,
+        purpose: 'Business expansion',
+        status: 'pending'
+      });
+
+    if (error) throw error;
+    
+    toast({
+      title: "Loan Application Submitted!",
+      description: "Your application for $25,000 at 8.5% APR has been submitted"
+    });
   };
 
   return (

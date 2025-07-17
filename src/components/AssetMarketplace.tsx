@@ -614,22 +614,101 @@ const riskColors = {
 };
 
 export function AssetMarketplace() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
 
   const filteredAssets = selectedCategory === 'all' 
     ? marketAssets 
     : marketAssets.filter(asset => asset.category === selectedCategory);
 
-  const handleBuyAsset = (asset: Asset) => {
-    // TODO: Implement purchase logic with database
-    console.log('Buying asset:', asset);
-    // Add to user_assets table, deduct from user balance
+  const handleBuyAsset = async (asset: Asset) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to purchase assets",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Add asset to user's portfolio
+      const { data: assetData, error: assetError } = await supabase
+        .from('user_assets')
+        .insert({
+          user_id: user.id,
+          name: asset.name,
+          asset_type: asset.category,
+          value: asset.price,
+          purchase_price: asset.price
+        });
+
+      if (assetError) throw assetError;
+
+      // Create transaction record
+      const { data: transactionData, error: transactionError } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'purchase',
+          category: asset.category,
+          amount: -asset.price,
+          description: `Purchased ${asset.name}`
+        });
+
+      if (transactionError) throw transactionError;
+
+      toast({
+        title: "Asset Purchased!",
+        description: `Successfully purchased ${asset.name} for $${asset.price.toLocaleString()}`
+      });
+    } catch (error) {
+      console.error('Purchase failed:', error);
+      toast({
+        title: "Purchase Failed",
+        description: "Could not complete purchase. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
-  const handleBidAsset = (asset: Asset) => {
-    // TODO: Implement bidding logic with database
-    console.log('Bidding on asset:', asset);
-    // Create bid record, handle auction logic
+  const handleBidAsset = async (asset: Asset) => {
+    if (!user) {
+      toast({
+        title: "Authentication Required",
+        description: "Please sign in to place bids",
+        variant: "destructive"
+      });
+      return;
+    }
+
+    try {
+      // Create transaction record for bid
+      const { data, error } = await supabase
+        .from('transactions')
+        .insert({
+          user_id: user.id,
+          type: 'bid',
+          category: asset.category,
+          amount: asset.price * 0.9, // Bid 90% of asking price
+          description: `Bid placed on ${asset.name}`
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "Bid Placed!",
+        description: `Your bid of $${(asset.price * 0.9).toLocaleString()} on ${asset.name} has been placed`
+      });
+    } catch (error) {
+      console.error('Bid failed:', error);
+      toast({
+        title: "Bid Failed",
+        description: "Could not place bid. Please try again.",
+        variant: "destructive"
+      });
+    }
   };
 
   return (

@@ -7,15 +7,20 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useUserProfile } from '@/hooks/useUserProfile';
 import { useToast } from '@/hooks/use-toast';
-import { Settings, Plus, X, DollarSign, Users, Target, Heart } from 'lucide-react';
+import { useContacts } from '@/hooks/useContacts';
+import { Settings, Plus, X, DollarSign, Users, Target, Heart, ContactIcon, ChevronDown } from 'lucide-react';
+import { supabase } from '@/integrations/supabase/client';
 
 const UserProfileSettings = () => {
   const { profile, updateProfile } = useUserProfile();
   const { toast } = useToast();
+  const { contacts, requestPermission, hasPermission } = useContacts();
   const [isOpen, setIsOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showContacts, setShowContacts] = useState(false);
 
   // Form states
   const [username, setUsername] = useState(profile?.username || '');
@@ -26,7 +31,7 @@ const UserProfileSettings = () => {
   const [lifeGoals, setLifeGoals] = useState<any[]>(Array.isArray(profile?.life_goals) ? profile.life_goals : []);
 
   // Family member form
-  const [newMember, setNewMember] = useState({ name: '', age: '', relationship: '' });
+  const [newMember, setNewMember] = useState({ name: '', age: '', relationship: '', phone: '' });
   
   // Life goal form
   const [newGoal, setNewGoal] = useState({ title: '', target_amount: '', deadline: '', priority: 'medium' });
@@ -59,10 +64,53 @@ const UserProfileSettings = () => {
     setLoading(false);
   };
 
-  const addFamilyMember = () => {
+  const addFamilyMember = async () => {
     if (newMember.name && newMember.age && newMember.relationship) {
-      setFamilyMembers([...familyMembers, { ...newMember, id: Date.now() }]);
-      setNewMember({ name: '', age: '', relationship: '' });
+      const memberToAdd = { ...newMember, id: Date.now() };
+      setFamilyMembers([...familyMembers, memberToAdd]);
+      
+      // Send SMS invitation if phone number is provided
+      if (newMember.phone) {
+        try {
+          await supabase.functions.invoke('send-family-invite', {
+            body: {
+              to: newMember.phone,
+              familyMemberName: newMember.name,
+              inviterName: profile?.username || 'A family member'
+            }
+          });
+          
+          toast({
+            title: "Family member added!",
+            description: `Invitation sent to ${newMember.name}`,
+            variant: "default"
+          });
+        } catch (error) {
+          toast({
+            title: "Member added",
+            description: "SMS invitation could not be sent",
+            variant: "destructive"
+          });
+        }
+      }
+      
+      setNewMember({ name: '', age: '', relationship: '', phone: '' });
+    }
+  };
+
+  const selectFromContacts = (contact: any) => {
+    setNewMember({
+      ...newMember,
+      name: contact.name,
+      phone: contact.phone
+    });
+    setShowContacts(false);
+  };
+
+  const handleContactPermission = async () => {
+    const granted = await requestPermission();
+    if (granted) {
+      setShowContacts(true);
     }
   };
 
@@ -180,38 +228,101 @@ const UserProfileSettings = () => {
               </CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-4 gap-2">
-                <Input
-                  placeholder="Name"
-                  value={newMember.name}
-                  onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
-                />
-                <Input
-                  placeholder="Age"
-                  type="number"
-                  value={newMember.age}
-                  onChange={(e) => setNewMember({ ...newMember, age: e.target.value })}
-                />
-                <Select value={newMember.relationship} onValueChange={(value) => setNewMember({ ...newMember, relationship: value })}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Relationship" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="spouse">Spouse</SelectItem>
-                    <SelectItem value="child">Child</SelectItem>
-                    <SelectItem value="parent">Parent</SelectItem>
-                    <SelectItem value="sibling">Sibling</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-                <Button onClick={addFamilyMember} size="sm">
-                  <Plus className="h-4 w-4" />
-                </Button>
+              <div className="space-y-3">
+                <div className="flex gap-2">
+                  <div className="flex-1 relative">
+                    <Input
+                      placeholder="Name"
+                      value={newMember.name}
+                      onChange={(e) => setNewMember({ ...newMember, name: e.target.value })}
+                      onFocus={() => !hasPermission && handleContactPermission()}
+                    />
+                    <Button
+                      variant="ghost"
+                      size="sm"
+                      className="absolute right-0 top-0 h-full px-3"
+                      onClick={handleContactPermission}
+                    >
+                      <ContactIcon className="h-4 w-4" />
+                    </Button>
+                  </div>
+                  <Input
+                    placeholder="Age"
+                    type="number"
+                    value={newMember.age}
+                    onChange={(e) => setNewMember({ ...newMember, age: e.target.value })}
+                    className="w-20"
+                  />
+                </div>
+                
+                <div className="flex gap-2">
+                  <Input
+                    placeholder="Phone (optional)"
+                    value={newMember.phone}
+                    onChange={(e) => setNewMember({ ...newMember, phone: e.target.value })}
+                    className="flex-1"
+                  />
+                  <Select value={newMember.relationship} onValueChange={(value) => setNewMember({ ...newMember, relationship: value })}>
+                    <SelectTrigger className="w-32">
+                      <SelectValue placeholder="Relationship" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="spouse">Spouse</SelectItem>
+                      <SelectItem value="child">Child</SelectItem>
+                      <SelectItem value="parent">Parent</SelectItem>
+                      <SelectItem value="sibling">Sibling</SelectItem>
+                      <SelectItem value="Aunt">Aunt</SelectItem>
+                      <SelectItem value="Uncle">Uncle</SelectItem>
+                      <SelectItem value="Cousin">Cousin</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <Button onClick={addFamilyMember} size="sm">
+                    <Plus className="h-4 w-4" />
+                  </Button>
+                </div>
+
+                {/* Contacts List */}
+                {showContacts && (
+                  <Collapsible open={showContacts} onOpenChange={setShowContacts}>
+                    <CollapsibleTrigger asChild>
+                      <Button variant="outline" className="w-full">
+                        <ContactIcon className="h-4 w-4 mr-2" />
+                        Select from Contacts
+                        <ChevronDown className="h-4 w-4 ml-auto" />
+                      </Button>
+                    </CollapsibleTrigger>
+                    <CollapsibleContent className="max-h-40 overflow-y-auto border rounded-md mt-2">
+                      {contacts.map((contact, index) => (
+                        <div
+                          key={index}
+                          className="p-2 hover:bg-muted cursor-pointer border-b last:border-b-0"
+                          onClick={() => selectFromContacts(contact)}
+                        >
+                          <div className="font-medium">{contact.name}</div>
+                          {contact.phone && (
+                            <div className="text-sm text-muted-foreground">{contact.phone}</div>
+                          )}
+                        </div>
+                      ))}
+                      {contacts.length === 0 && (
+                        <div className="p-4 text-center text-muted-foreground">
+                          No contacts available
+                        </div>
+                      )}
+                    </CollapsibleContent>
+                  </Collapsible>
+                )}
               </div>
               <div className="space-y-2">
                 {familyMembers.map((member: any) => (
                   <div key={member.id} className="flex items-center justify-between p-2 bg-muted rounded">
-                    <span>{member.name} ({member.age}) - {member.relationship}</span>
+                    <div>
+                      <span className="font-medium">{member.name} ({member.age}) - {member.relationship}</span>
+                      {member.phone && (
+                        <div className="text-sm text-muted-foreground">{member.phone}</div>
+                      )}
+                    </div>
                     <Button variant="ghost" size="sm" onClick={() => removeFamilyMember(member.id)}>
                       <X className="h-4 w-4" />
                     </Button>

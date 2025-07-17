@@ -7,6 +7,9 @@ import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Progress } from "@/components/ui/progress";
 import { Slider } from "@/components/ui/slider";
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/components/ui/use-toast';
 import { 
   Building2, 
   CreditCard, 
@@ -114,6 +117,8 @@ const p2pLoans = [
 ];
 
 export default function BankingSystem() {
+  const { user } = useAuth();
+  const { toast } = useToast();
   const [currentTab, setCurrentTab] = useState('apply');
   const [loanAmount, setLoanAmount] = useState([25000]);
   const [loanTerm, setLoanTerm] = useState([36]);
@@ -293,7 +298,43 @@ export default function BankingSystem() {
                     </CardContent>
                   </Card>
 
-                  <Button className="w-full" variant="premium" onClick={() => console.log('Applying for loan with amount:', loanAmount[0])}>
+                  <Button className="w-full" variant="premium" onClick={async () => {
+                    if (!user) {
+                      toast({
+                        title: "Authentication Required",
+                        description: "Please sign in to apply for loans",
+                        variant: "destructive"
+                      });
+                      return;
+                    }
+
+                    try {
+                      const { data, error } = await supabase
+                        .from('loans')
+                        .insert({
+                          lender_id: user.id,
+                          amount: loanAmount[0],
+                          interest_rate: 8.5,
+                          term_months: loanTerm[0],
+                          purpose: 'Personal loan application',
+                          status: 'pending'
+                        });
+
+                      if (error) throw error;
+
+                      toast({
+                        title: "Loan Application Submitted!",
+                        description: `Application for $${loanAmount[0].toLocaleString()} submitted successfully`
+                      });
+                    } catch (error) {
+                      console.error('Loan application failed:', error);
+                      toast({
+                        title: "Application Failed",
+                        description: "Could not submit loan application. Please try again.",
+                        variant: "destructive"
+                      });
+                    }
+                  }}>
                     Apply for Loan
                   </Button>
                 </div>
@@ -354,7 +395,44 @@ export default function BankingSystem() {
                         className="w-full" 
                         disabled={!qualified}
                         variant={qualified ? "default" : "outline"}
-                        onClick={() => qualified && console.log('Applying for bank loan:', loan.id)}
+                        onClick={async () => {
+                          if (!qualified) return;
+                          if (!user) {
+                            toast({
+                              title: "Authentication Required",
+                              description: "Please sign in to apply for loans",
+                              variant: "destructive"
+                            });
+                            return;
+                          }
+
+                          try {
+                            const { data, error } = await supabase
+                              .from('loans')
+                              .insert({
+                                lender_id: user.id,
+                                amount: loan.amount,
+                                interest_rate: loan.interestRate,
+                                term_months: loan.term,
+                                purpose: `${loan.type} loan`,
+                                status: 'pending'
+                              });
+
+                            if (error) throw error;
+
+                            toast({
+                              title: "Loan Application Submitted!",
+                              description: `Applied for ${loan.type} loan of $${loan.amount.toLocaleString()}`
+                            });
+                          } catch (error) {
+                            console.error('Loan application failed:', error);
+                            toast({
+                              title: "Application Failed",
+                              description: "Could not submit loan application. Please try again.",
+                              variant: "destructive"
+                            });
+                          }
+                        }}
                       >
                         {qualified ? 'Apply Now' : 'Improve Credit Score'}
                       </Button>
@@ -406,10 +484,52 @@ export default function BankingSystem() {
                     </div>
 
                     <div className="flex gap-2">
-                      <Button variant="outline" className="flex-1" onClick={() => console.log('Negotiating terms for loan:', loan.id)}>
+                      <Button variant="outline" className="flex-1" onClick={() => {
+                        toast({
+                          title: "Negotiation Started",
+                          description: `Negotiation request sent to ${loan.lender}`,
+                        });
+                      }}>
                         Negotiate Terms
                       </Button>
-                      <Button variant="default" className="flex-1" onClick={() => console.log('Applying for P2P loan:', loan.id)}>
+                      <Button variant="default" className="flex-1" onClick={async () => {
+                        if (!user) {
+                          toast({
+                            title: "Authentication Required",
+                            description: "Please sign in to apply for loans",
+                            variant: "destructive"
+                          });
+                          return;
+                        }
+
+                        try {
+                          const { data, error } = await supabase
+                            .from('loans')
+                            .insert({
+                              lender_id: user.id,
+                              borrower_id: user.id,
+                              amount: loan.amount,
+                              interest_rate: loan.interestRate,
+                              term_months: loan.term,
+                              purpose: loan.purpose,
+                              status: 'pending'
+                            });
+
+                          if (error) throw error;
+
+                          toast({
+                            title: "P2P Loan Application Submitted!",
+                            description: `Applied for $${loan.amount.toLocaleString()} from ${loan.lender}`
+                          });
+                        } catch (error) {
+                          console.error('P2P loan application failed:', error);
+                          toast({
+                            title: "Application Failed",
+                            description: "Could not submit loan application. Please try again.",
+                            variant: "destructive"
+                          });
+                        }
+                      }}>
                         Apply Now
                       </Button>
                     </div>
@@ -424,7 +544,12 @@ export default function BankingSystem() {
                   <p className="text-sm text-muted-foreground mb-4">
                     Earn 8-15% returns by lending to other players
                   </p>
-                  <Button variant="premium" onClick={() => console.log('Starting lending process')}>
+                  <Button variant="premium" onClick={() => {
+                    toast({
+                      title: "Lending Platform",
+                      description: "Lending platform coming soon! Earn 8-15% returns by lending to other players.",
+                    });
+                  }}>
                     Start Lending
                   </Button>
                 </CardContent>
